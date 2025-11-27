@@ -1,0 +1,65 @@
+[
+  {
+    "id": "eval-001-sequelize-to-sql",
+    "skills": ["debugging-orm-queries"],
+    "query": "Convert this Sequelize query to raw SQL:\n\nconst users = await User.findAll({\n  where: { status: 'active', role: { [Op.in]: ['admin', 'moderator'] } },\n  include: [{ model: Post, where: { published: true } }],\n  order: [['createdAt', 'DESC']],\n  limit: 10\n});",
+    "files": [],
+    "expected_behavior": [
+      "Reads references/nodejs.md to find Sequelize patterns",
+      "Produces equivalent SQL with JOIN, WHERE, ORDER BY, LIMIT",
+      "Correctly translates Op.in to SQL IN clause",
+      "Shows the eager-loaded Post relationship as a JOIN"
+    ]
+  },
+  {
+    "id": "eval-002-sql-to-gorm",
+    "skills": ["debugging-orm-queries"],
+    "query": "I have this SQL query from our logs. How would I write this in GORM?\n\nSELECT orders.*, customers.name, customers.email\nFROM orders\nINNER JOIN customers ON orders.customer_id = customers.id\nWHERE orders.total > 100 AND orders.status = 'pending'\nORDER BY orders.created_at DESC\nLIMIT 20 OFFSET 40;",
+    "files": [],
+    "expected_behavior": [
+      "Reads references/golang.md for GORM patterns",
+      "Uses db.Model or db.Table with Joins()",
+      "Applies Where() conditions correctly",
+      "Uses Order(), Limit(), Offset() methods",
+      "Suggests Preload() as alternative to Joins() if appropriate"
+    ]
+  },
+  {
+    "id": "eval-003-n1-detection",
+    "skills": ["debugging-orm-queries"],
+    "query": "Analyze this query log and tell me what's wrong:\n\nSELECT * FROM users WHERE department_id = 5;\nSELECT * FROM orders WHERE user_id = 101;\nSELECT * FROM orders WHERE user_id = 102;\nSELECT * FROM orders WHERE user_id = 103;\nSELECT * FROM orders WHERE user_id = 104;\nSELECT * FROM orders WHERE user_id = 105;",
+    "files": [],
+    "expected_behavior": [
+      "Identifies N+1 query pattern (1 users query + N orders queries)",
+      "References anti_patterns.md for solutions",
+      "Suggests eager loading or batch fetching",
+      "May suggest using query_analyzer.py script for automated detection"
+    ]
+  },
+  {
+    "id": "eval-004-explain-analysis",
+    "skills": ["debugging-orm-queries"],
+    "query": "This PostgreSQL EXPLAIN output shows a slow query. What's the issue?\n\nSeq Scan on orders  (cost=0.00..125000.00 rows=500000 width=120) (actual time=0.015..1523.456 rows=523841 loops=1)\n  Filter: (status = 'pending'::text)\n  Rows Removed by Filter: 4476159\nPlanning Time: 0.089 ms\nExecution Time: 1842.123 ms",
+    "files": [],
+    "expected_behavior": [
+      "Identifies sequential scan as the problem",
+      "Notes high row removal ratio (4.4M removed vs 500K kept)",
+      "Recommends index on status column",
+      "May suggest using explain_parser.py for automated analysis",
+      "References anti_patterns.md missing indexes section"
+    ]
+  },
+  {
+    "id": "eval-005-django-optimization",
+    "skills": ["debugging-orm-queries"],
+    "query": "My Django view is slow. Here's the code:\n\nfor author in Author.objects.filter(active=True):\n    books = author.book_set.all()\n    for book in books:\n        print(f\"{author.name}: {book.title}\")\n\nHow do I fix this and what SQL should it generate?",
+    "files": [],
+    "expected_behavior": [
+      "Identifies N+1 pattern in the loop",
+      "Reads references/python.md for Django ORM",
+      "Suggests prefetch_related('book_set') solution",
+      "Shows expected SQL with single query or optimized JOINs",
+      "May reference select_related vs prefetch_related distinction"
+    ]
+  }
+]
