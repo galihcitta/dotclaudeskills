@@ -1,6 +1,6 @@
 ---
 name: refining-requirements
-description: Refines PRDs, feature specs, and task descriptions for AI-assisted implementation. Handles both greenfield projects and feature additions. Auto-detects tech stack from project files, reads conventions from CLAUDE.md, validates file paths against codebase, and saves refined specs to agent-workflow/requirements/. Offers scaffolding of boilerplate files. Triggers on "refine this PRD", "new project", "build from scratch", "optimize requirements", or ambiguous specs.
+description: Use when PRD is prose-heavy, ambiguous, has scattered file paths, missing API contracts, or says "similar to X" without explanation. Transforms rough requirements into implementation-ready specs. Auto-detects tech stack, validates file paths (EXISTS/CREATE/VERIFY markers), handles greenfield and multi-stack projects. Do NOT use for simple bug fixes, typos, or already-structured Jira tickets with clear file paths and acceptance criteria.
 ---
 
 # Requirements Refiner
@@ -16,6 +16,21 @@ Transform rough requirements into implementation-ready specifications optimized 
 - Before starting implementation on complex features
 - **Starting a new project from scratch (greenfield)**
 - Need to identify missing information before coding
+- Architectural refactoring (e.g., session-based to JWT)
+- Multi-service features spanning frontend/backend/database
+
+## When NOT to Use
+
+**Skip refinement for:**
+- Simple bug fixes with clear location (e.g., "fix typo in file X line Y")
+- Well-structured Jira tickets that already have:
+  - Explicit file paths to modify
+  - Clear acceptance criteria
+  - Defined scope and deliverables
+- Single-line changes or trivial updates
+- Tasks where implementation path is obvious
+
+**Decision rule:** If the task has specific file paths, clear acceptance criteria, and no ambiguity about what to build → execute directly, don't refine.
 
 ## Workflow
 
@@ -52,8 +67,22 @@ Extract and apply:
 
 | Type | Indicators | Template |
 |------|------------|----------|
-| Greenfield | "new project", "build from scratch", no existing files | Use `references/greenfield-patterns.md` |
+| Greenfield | "new project", "build from scratch", "new microservice", "from scratch", no existing code to reference | Use `references/greenfield-patterns.md` |
 | Feature | References existing code, adds to current system | Use standard templates |
+| Multi-stack | Monorepo with multiple languages, feature spans services | Create separate sections per stack |
+
+**Greenfield indicators** (any of these = greenfield):
+- "Build new service/microservice"
+- "From scratch" or "brand new"
+- "No existing code"
+- "Deploy to Kubernetes" (new service)
+- No file paths to validate (all CREATE, no EXISTS)
+
+**Multi-stack indicators** (any of these = multi-stack):
+- Monorepo structure mentioned (packages/, services/)
+- Multiple languages listed (React + Go + Python)
+- Cross-service feature (frontend + backend + database)
+- Shared types/contracts between services
 
 ### Phase 1: Check for Missing Information
 
@@ -108,6 +137,29 @@ Adapt to detected tech stack using `references/stack-patterns.md`:
 - Naming conventions
 - Test patterns
 
+**For multi-stack projects:**
+Create SEPARATE file mapping sections per stack:
+```markdown
+## File Mappings
+
+### Frontend (React/TypeScript)
+| Path | Status | Action |
+|------|--------|--------|
+| packages/web/src/components/Feature.tsx | ✗ CREATE | New component |
+
+### Backend API (Go)
+| Path | Status | Action |
+|------|--------|--------|
+| services/api/internal/handlers/feature.go | ✗ CREATE | New handler |
+
+### Shared Types (TypeScript)
+| Path | Status | Action |
+|------|--------|--------|
+| packages/shared/types/feature.ts | ✗ CREATE | Shared interfaces |
+```
+
+Include cross-service API contracts showing how services communicate.
+
 ### Phase 5: Generate Test Scenarios
 
 Derive tests from business logic. See `references/test-patterns.md`
@@ -118,7 +170,29 @@ Derive tests from business logic. See `references/test-patterns.md`
 
 **UI Copy**: Extract all user-facing text into bilingual table (ID/EN). See `references/ui-copy-patterns.md`
 
-### Phase 7: Save Output
+### Phase 7: Verify Completeness
+
+**STOP before saving. Verify output includes:**
+
+| Section | Required? | Check |
+|---------|-----------|-------|
+| Scope (in/out) | Always | [ ] |
+| File Mappings with markers | Always | [ ] |
+| Data Model (if DB changes) | If applicable | [ ] |
+| API Contracts (if endpoints) | If applicable | [ ] |
+| Business Logic | Always | [ ] |
+| Test Scenarios | Always | [ ] |
+| Security Checklist | Always | [ ] |
+| UI Copy (if user-facing) | If applicable | [ ] |
+| Execution Checklist | Always | [ ] |
+
+**For greenfield:** Verify ALL file paths are marked CREATE (no EXISTS).
+
+**For multi-stack:** Verify separate sections exist for each stack.
+
+**If any required section is missing:** Add it before proceeding.
+
+### Phase 8: Save Output
 
 **Always save refined PRD to project:**
 
@@ -147,7 +221,7 @@ original_prd: [filename if provided]
 ---
 ```
 
-### Phase 8: Offer Scaffolding (Optional)
+### Phase 9: Offer Scaffolding (Optional)
 
 After saving refined PRD, ask:
 
@@ -321,3 +395,6 @@ See `references/transformation-patterns.md` for detailed before/after examples i
 5. **Missing edge cases** — Explicitly list: what if X fails?
 6. **Not reading existing code** — Always `cat` similar files first
 7. **Not saving output** — Always save to `agent-workflow/requirements/`
+8. **Over-refining structured specs** — Don't bloat already-clear Jira tickets
+9. **Mixed stack patterns** — Don't use Node.js patterns for Go projects
+10. **Missing completeness check** — Always verify all sections before saving
