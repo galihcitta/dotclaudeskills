@@ -21,6 +21,8 @@ Think of them as "expert modes" you can plug into Claude.
 | [optimizing-queries](skills/optimizing-queries/) | Analyzes queries and suggests indexes, rewrites, and fixes. Covers PostgreSQL, MySQL, MongoDB, Redis, DynamoDB, Elasticsearch. |
 | [refining-requirements](skills/refining-requirements/) | Takes messy PRDs or feature ideas and turns them into clean, implementable specs. Auto-detects tech stack. |
 | [creating-handoffs](skills/creating-handoffs/) | Creates handoff documents for seamless AI agent session transfers. Solves context exhaustion in long-running sessions. |
+| [writing-skills](skills/writing-skills/) | Guides creating new skills using TDD - test with subagents first, write skill to address failures, iterate until bulletproof. |
+| [testing-skills-with-subagents](skills/testing-skills-with-subagents/) | Tests skills before deployment using RED-GREEN-REFACTOR cycle. Runs baseline without skill, writes to fix failures, closes loopholes. |
 
 ## Getting Started
 
@@ -34,6 +36,8 @@ ln -s "$(pwd)/skills/debugging-orm-queries" ~/.claude/skills/
 ln -s "$(pwd)/skills/optimizing-queries" ~/.claude/skills/
 ln -s "$(pwd)/skills/refining-requirements" ~/.claude/skills/
 ln -s "$(pwd)/skills/creating-handoffs" ~/.claude/skills/
+ln -s "$(pwd)/skills/writing-skills" ~/.claude/skills/
+ln -s "$(pwd)/skills/testing-skills-with-subagents" ~/.claude/skills/
 ```
 
 That's it. Skills activate automatically when relevant.
@@ -67,6 +71,13 @@ That's it. Skills activate automatically when relevant.
 > Save state before I close this session
 > Resume from handoff
 > Continue where we left off
+```
+
+**When I'm building a new skill:**
+```
+> Create a skill for [task]
+> Test this skill with subagents
+> Run baseline without the skill first
 ```
 
 ## Want to Build Your Own?
