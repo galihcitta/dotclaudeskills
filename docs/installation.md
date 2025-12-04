@@ -14,6 +14,7 @@ ln -s "$(pwd)/skills/refining-requirements" ~/.claude/skills/
 ln -s "$(pwd)/skills/creating-handoffs" ~/.claude/skills/
 ln -s "$(pwd)/skills/writing-skills" ~/.claude/skills/
 ln -s "$(pwd)/skills/testing-skills-with-subagents" ~/.claude/skills/
+ln -s "$(pwd)/skills/troubleshooting-kubernetes" ~/.claude/skills/
 ```
 
 Done. Skills activate automatically when you ask something relevant.

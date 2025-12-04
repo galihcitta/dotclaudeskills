@@ -23,6 +23,7 @@ Think of them as "expert modes" you can plug into Claude.
 | [creating-handoffs](skills/creating-handoffs/) | Creates handoff documents for seamless AI agent session transfers. Solves context exhaustion in long-running sessions. |
 | [writing-skills](skills/writing-skills/) | Guides creating new skills using TDD - test with subagents first, write skill to address failures, iterate until bulletproof. |
 | [testing-skills-with-subagents](skills/testing-skills-with-subagents/) | Tests skills before deployment using RED-GREEN-REFACTOR cycle. Runs baseline without skill, writes to fix failures, closes loopholes. |
+| [troubleshooting-kubernetes](skills/troubleshooting-kubernetes/) | Diagnoses K8s issues (CrashLoopBackOff, OOMKilled, ImagePullBackOff, pending pods) with interactive remediation. Always presents fix options before applying. |
 
 ## Getting Started
 
@@ -38,6 +39,7 @@ ln -s "$(pwd)/skills/refining-requirements" ~/.claude/skills/
 ln -s "$(pwd)/skills/creating-handoffs" ~/.claude/skills/
 ln -s "$(pwd)/skills/writing-skills" ~/.claude/skills/
 ln -s "$(pwd)/skills/testing-skills-with-subagents" ~/.claude/skills/
+ln -s "$(pwd)/skills/troubleshooting-kubernetes" ~/.claude/skills/
 ```
 
 That's it. Skills activate automatically when relevant.
@@ -78,6 +80,13 @@ That's it. Skills activate automatically when relevant.
 > Create a skill for [task]
 > Test this skill with subagents
 > Run baseline without the skill first
+```
+
+**When my pods are crashing or services unreachable:**
+```
+> Pod keeps crashing with OOMKilled
+> Service returning 502, help me debug
+> Deployment stuck in pending
 ```
 
 ## Want to Build Your Own?
