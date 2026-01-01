@@ -362,9 +362,180 @@ Need to maintain backward compatibility during migration.
 
 ---
 
+## Category D: Interview Phase Scenarios
+
+### D1: Interview Triggers Non-Obvious Questions
+
+**Input PRD:**
+```
+Add a shopping cart feature to our e-commerce site.
+
+- Users can add/remove items
+- Cart persists across sessions
+- Show item count in header
+- Checkout flow already exists
+
+Stack: React frontend, Node.js backend, PostgreSQL
+```
+
+**Expected Interview Behavior:**
+- [ ] Asks about edge cases, not obvious features
+- [ ] Example good questions:
+  - "What happens if an item goes out of stock while in cart?"
+  - "If user is logged out, should guest cart merge with logged-in cart?"
+  - "What's the cart expiry policy - does it ever clear automatically?"
+  - "Can items be reserved while in cart, or can someone else buy the last one?"
+- [ ] Does NOT ask obvious questions like:
+  - "What database will you use?" (already specified)
+  - "What's the frontend framework?" (already specified)
+  - "Should the cart be persistent?" (already specified)
+
+---
+
+### D2: Interview Respects Skip Option
+
+**Input PRD:**
+```
+JIRA-5678: Add email notification for order shipment
+
+Acceptance Criteria:
+- Trigger when order status changes to 'shipped'
+- Include tracking number and carrier link
+- Use existing SendGrid integration
+- Template: order-shipped.hbs
+
+Files:
+- services/notification/src/templates/order-shipped.hbs (CREATE)
+- services/notification/src/handlers/shipment.ts (CREATE)
+- services/order/src/events/statusChange.ts (MODIFY)
+
+Test Cases:
+- Order shipped → email sent with correct tracking
+- Missing tracking number → skip email, log warning
+- SendGrid failure → retry 3x then alert
+```
+
+**Expected Interview Behavior:**
+- [ ] Recognizes PRD is already comprehensive
+- [ ] Offers skip option: "Your requirements look detailed. Proceed or interview?"
+- [ ] If user says proceed, skips interview entirely
+- [ ] Does NOT force unnecessary interview on well-structured input
+
+---
+
+### D3: Interview Continues Until Complete
+
+**Input PRD:**
+```
+Build user authentication for our new app.
+
+Features:
+- Login with email/password
+- Registration
+- Password reset
+```
+
+**Expected Interview Behavior:**
+- [ ] Asks multiple rounds of questions
+- [ ] Covers all domains:
+  - Technical: "What happens if login fails 5 times?"
+  - UX: "What's the experience on mobile vs desktop?"
+  - Security: "Do we need audit logging for compliance?"
+  - Business: "Are there different user roles/permissions?"
+- [ ] Provides exit option each round
+- [ ] Continues until user says "proceed" or gaps filled
+- [ ] Does NOT stop after just one round of questions
+
+---
+
+### D4: Interview Incorporates Answers Into Spec
+
+**Input PRD:**
+```
+Add file upload feature for user avatars.
+
+- Users can upload profile picture
+- Display on profile page
+- Crop to square
+```
+
+**Simulated Interview Answers:**
+```
+Q: "What's the max file size? What happens if exceeded?"
+A: "10MB max, show error immediately before upload"
+
+Q: "What file formats are allowed?"
+A: "JPG, PNG only. Reject others with clear message"
+
+Q: "Where are files stored - local or cloud?"
+A: "S3, with CloudFront CDN"
+
+Q: "What about malicious files - any scanning needed?"
+A: "Yes, run through ClamAV before accepting"
+```
+
+**Expected Output:**
+- [ ] Final spec includes ALL interview answers:
+  - File size limit: 10MB with client-side validation
+  - Formats: JPG, PNG only
+  - Storage: S3 + CloudFront
+  - Security: ClamAV malware scanning
+- [ ] Interview summary section present
+- [ ] No interview answers are lost or ignored
+
+---
+
+### D5: Interview Handles Tradeoff Questions
+
+**Input PRD:**
+```
+Improve search performance on our product catalog.
+
+Current issues:
+- Search takes 3-5 seconds
+- No autocomplete
+- Results often irrelevant
+```
+
+**Expected Interview Behavior:**
+- [ ] Asks tradeoff questions:
+  - "Search-as-you-type vs search-on-submit - which matters more?"
+  - "Perfect relevance vs sub-second speed - where's the line?"
+  - "Build custom search vs use Elasticsearch/Algolia?"
+  - "Index everything vs most-searched fields only?"
+- [ ] Records tradeoff decisions in interview summary
+- [ ] Uses decisions to inform spec (e.g., "Based on prioritizing speed over perfect relevance...")
+
+---
+
+### D6: Interview Probes Failure Modes
+
+**Input PRD:**
+```
+Integrate with third-party inventory API to sync stock levels.
+
+- Fetch stock levels every 5 minutes
+- Update our database
+- Show real-time availability on product pages
+```
+
+**Expected Interview Behavior:**
+- [ ] Probes failure scenarios:
+  - "What happens if the inventory API is down for 30+ minutes?"
+  - "If their data conflicts with ours (they show 0, we show 10), which wins?"
+  - "What if the sync job crashes mid-update - partial state?"
+  - "Rate limits on their API - what's our strategy when throttled?"
+- [ ] Does NOT assume happy path only
+- [ ] Surfaces operational concerns:
+  - Monitoring/alerting for sync failures
+  - Fallback behavior during outages
+  - Data reconciliation strategy
+
+---
+
 ## Scoring Rubric
 
-For each test:
+### Standard Scenarios (Categories A-C)
 
 | Criterion | Points | Description |
 |-----------|--------|-------------|
@@ -374,3 +545,23 @@ For each test:
 | Quality | 0-2 | Actionable, clear, no ambiguity |
 
 **Pass threshold:** 8/10 points per scenario
+
+### Interview Scenarios (Category D)
+
+| Criterion | Points | Description |
+|-----------|--------|-------------|
+| Question Quality | 0-3 | Non-obvious, scenario-based, probes edge cases |
+| Domain Coverage | 0-2 | Covers technical, UX, security, business, operations |
+| Skip Respect | 0-2 | Offers skip for comprehensive PRDs, respects user choice |
+| Answer Integration | 0-2 | All interview answers reflected in final spec |
+| Exit Handling | 0-1 | Proper exit conditions, doesn't over-interview |
+
+**Pass threshold:** 8/10 points per interview scenario
+
+### Red Flags (Automatic Fail)
+
+- Asking obvious questions ("What database?") when already specified
+- Forcing interview on already-comprehensive PRDs
+- Ignoring interview answers in final spec
+- Stopping interview after only one round for vague PRDs
+- Not providing exit option

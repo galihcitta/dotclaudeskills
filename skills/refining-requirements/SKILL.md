@@ -88,14 +88,128 @@ Extract and apply:
 
 Scan PRD for completeness. See `references/edge-cases.md` for checklist.
 
-If critical info is missing, generate a **⚠️ Clarification Needed** section with:
-- Critical (blocking) questions
-- Important (affects design) questions  
-- Assumptions being made
+If critical info is missing, note the gaps for the interview phase.
+
+### Phase 1.5: Interactive Deep-Dive Interview
+
+**This is the core differentiator.** Don't just identify gaps - actively probe for them.
+
+#### Step 1: Offer Skip Option
+
+If PRD appears comprehensive (all sections present, clear scope, explicit file paths):
+
+```
+"Your requirements look comprehensive. Would you like to:
+1. Proceed directly to spec generation
+2. Quick sanity-check interview (5-10 questions)
+3. Deep-dive interview (thorough exploration)"
+```
+
+If user chooses to proceed, skip to Phase 2.
+
+#### Step 2: Conduct Interview
+
+Use `AskUserQuestion` tool to probe deeply. Ask 1-4 questions per round.
+
+**Question Selection Priority:**
+1. Blocking unknowns (can't proceed without answer)
+2. High-impact architectural decisions
+3. Failure modes and edge cases
+4. UX details and user segments
+5. Operational concerns
+
+**Question Categories** (see `references/interview-patterns.md` for full templates):
+
+| Category | Focus Areas |
+|----------|-------------|
+| Technical Edge Cases | Failure/recovery, concurrency, scaling, data integrity |
+| User Experience | Loading states, error presentation, multi-platform, accessibility |
+| Data & Security | PII handling, compliance, access control, audit trails |
+| Business Logic | Rule conflicts, state transitions, edge cases, dependencies |
+| Operations | Deployment strategy, monitoring, support tools |
+| Tradeoffs | Scope prioritization, quality attributes, build vs buy |
+
+**Question Quality Rules:**
+- Ask about WHAT HAPPENS WHEN, not WHAT IS
+- Scenario-based > abstract
+- Specific > general
+- Probe edge cases, not happy paths
+- Never ask obvious questions (database choice, endpoint names)
+
+**Example Good Questions:**
+```
+"If the user closes the browser mid-transaction, what state should they see when they return?"
+
+"When [Service A] and [Service B] both try to update the same record, which wins?"
+
+"If this feature gets 100x expected traffic tomorrow, what breaks first?"
+
+"What's the experience for a user on 3G mobile with 500ms latency?"
+```
+
+**Example Bad Questions (NEVER ask these):**
+```
+"What database will you use?" (obvious/they'll tell you)
+"What should the API return?" (too low-level)
+"Is security important?" (obviously yes)
+"Should it be fast?" (obviously yes)
+```
+
+#### Step 3: Iterate Until Complete
+
+```
+WHILE interview_active:
+    1. Review current knowledge and gaps
+    2. Select 1-4 highest-priority questions
+    3. Ask using AskUserQuestion with smart options
+    4. Record answers
+    5. Update mental model with new information
+    6. Check exit conditions
+```
+
+**Always include an exit option in each question set:**
+- "That's enough, proceed with spec" as an option
+- Or ask explicitly: "Continue probing or ready to generate spec?"
+
+#### Step 4: Exit Conditions
+
+Stop interviewing when ANY of these are true:
+- User explicitly says "proceed" or "that's enough"
+- All critical gaps are filled (no blocking unknowns)
+- Questions become repetitive or hypothetical
+- Answers converge to "standard approach" or "same as before"
+
+**Anti-rationalization:** If you're unsure whether to continue, ask one more round. Better to over-interview than under-interview.
+
+#### Step 5: Summarize Findings
+
+Before proceeding, briefly summarize key decisions from interview:
+
+```markdown
+## Interview Summary
+
+**Key Decisions:**
+- Error handling: Show all errors at once, inline validation
+- Scaling: Must handle 10k concurrent users by month 3
+- Rollback: Feature flag with kill switch required
+- Mobile: Responsive, not separate app
+
+**Discovered Requirements:**
+- Need audit trail for compliance
+- Session timeout: 30 minutes idle
+- Rate limit: 100 requests/minute per user
+```
 
 ### Phase 2: Extract and Classify
 
 Pull out: scope, file mappings, data models, API contracts, business logic, UI copy
+
+**Incorporate interview findings:**
+- Add discovered requirements from interview
+- Update scope based on tradeoff decisions
+- Include edge cases and failure modes discussed
+- Add compliance/security requirements surfaced
+- Note any constraints or limitations mentioned
 
 ### Phase 3: Validate File Paths Against Codebase
 
@@ -172,44 +286,110 @@ Derive tests from business logic. See `references/test-patterns.md`
 
 ### Phase 7: Verify Completeness
 
-**STOP before saving. Verify output includes:**
+**STOP before saving. Verify content and determine output format:**
+
+#### 7a. Determine Output Format (Threshold-Based)
+
+**Estimate your total output line count using this heuristic:**
+
+| Feature Complexity | Typical Output | Format |
+|--------------------|----------------|--------|
+| Simple (1-2 files, no API, no DB) | 50-100 lines | Single file |
+| Medium (3-5 files, some API or DB) | 100-200 lines | Depends on triggers |
+| Complex (6+ files, API + DB + external) | 200-400+ lines | Multi-file |
+
+**Threshold:** < 150 lines = single file, ≥ 150 lines = multi-file
+
+**Always use multi-file for (regardless of line count):**
+- Greenfield projects (creating a new service/package from scratch)
+- Multi-stack features (different language ecosystems, e.g., React + Go)
+- Features with 3+ API endpoints
+- Features with external API integrations (webhooks, third-party services)
+- Features with ANY TWO of: database migrations, API changes, UI copy
+
+**Single file is fine for:**
+- Simple bug fixes with clear scope
+- Small features affecting 1-2 files
+- Quick refinements that fit on one screen
+- Client-side only changes (no backend)
+
+**Anti-rationalization rule:** If you're trying to "fit" content into single-file, use multi-file instead. When uncertain, multi-file is always acceptable.
+
+#### 7b. Verify Section Content
 
 | Section | Required? | Check |
 |---------|-----------|-------|
 | Scope (in/out) | Always | [ ] |
 | File Mappings with markers | Always | [ ] |
-| Data Model (if DB changes) | If applicable | [ ] |
-| API Contracts (if endpoints) | If applicable | [ ] |
+| Data Model | If DB changes | [ ] |
+| API Contracts | If endpoints | [ ] |
 | Business Logic | Always | [ ] |
 | Test Scenarios | Always | [ ] |
 | Security Checklist | Always | [ ] |
-| UI Copy (if user-facing) | If applicable | [ ] |
+| UI Copy | If user-facing | [ ] |
 | Execution Checklist | Always | [ ] |
 
 **For greenfield:** Verify ALL file paths are marked CREATE (no EXISTS).
 
 **For multi-stack:** Verify separate sections exist for each stack.
 
-**If any required section is missing:** Add it before proceeding.
+**If any required section is missing:** Complete it before proceeding.
 
 ### Phase 8: Save Output
 
-**Always save refined PRD to project:**
+**Use the format determined in Phase 7a (threshold-based).**
+
+---
+
+#### Option A: Single File (< 150 lines or simple features)
 
 ```bash
-# Create output directory if needed
 mkdir -p agent-workflow/requirements
-
-# Save with timestamp and descriptive name
-# Format: YYYYMMDD-feature-name.md
 ```
 
-**Naming convention:**
-- `agent-workflow/requirements/20241127-whatsapp-verification.md`
-- `agent-workflow/requirements/20241127-pin-management-api.md`
-- `agent-workflow/requirements/20241127-new-verification-service.md` (greenfield)
+**Naming:** `agent-workflow/requirements/YYYYMMDD-feature-name.md`
 
-**Always include in saved file:**
+**Examples:**
+- `agent-workflow/requirements/20241127-add-email-field.md`
+- `agent-workflow/requirements/20241127-fix-validation-bug.md`
+
+**Use the single-file template** from Output Structure section below.
+
+---
+
+#### Option B: Multi-File Directory (≥ 150 lines or complex features)
+
+```bash
+mkdir -p agent-workflow/requirements/YYYYMMDD-feature-name
+```
+
+**Directory structure:**
+```
+agent-workflow/requirements/YYYYMMDD-feature-name/
+├── README.md              # Overview + navigation (always)
+├── scope.md               # In/Out scope (always)
+├── file-mappings.md       # Files to create/modify (always)
+├── api-contracts.md       # Endpoint definitions (if applicable)
+├── data-model.md          # Database changes (if applicable)
+├── business-logic.md      # Rules and flows (always)
+├── test-scenarios.md      # Test cases (always)
+├── security.md            # Security checklist (always)
+├── ui-copy.md             # Bilingual UI text (if applicable)
+└── execution-checklist.md # Implementation steps (always)
+```
+
+**Examples:**
+- `agent-workflow/requirements/20241127-whatsapp-verification/`
+- `agent-workflow/requirements/20241127-new-verification-service/` (greenfield)
+
+**Conditional file creation (multi-file only):**
+- `api-contracts.md` — Only create if feature has API endpoints
+- `data-model.md` — Only create if feature has database changes
+- `ui-copy.md` — Only create if feature has user-facing text
+
+---
+
+**Frontmatter (both formats):**
 ```markdown
 ---
 title: [Feature Name]
@@ -242,112 +422,23 @@ If yes, create:
 
 ## Output Structure
 
-```markdown
----
-title: [Feature Name]
-created: 2024-11-27T10:00:00Z
-status: draft
-stack: nodejs | go | python | java
-type: feature | greenfield
-original_prd: int-1429.md
----
+**For templates, see `references/templates.md`:**
+- Single-File Output Template — for simple features (< 150 lines)
+- Multi-File Output Templates — for complex features (≥ 150 lines)
 
-# [Feature Name]
-
-## Scope
-### In Scope
-- Deliverable 1
-- Deliverable 2
-### Out of Scope
-- What NOT to build
-
-## Project Context
-- **Stack**: Auto-detected or specified
-- **Conventions**: From CLAUDE.md
-- **Related patterns**: Files read for reference
-
-## Complexity Assessment
-| Metric | Value |
-|--------|-------|
-| Files to create | N |
-| Files to modify | N |
-| New endpoints | N |
-| Database migrations | N |
-| External dependencies | List |
-| Estimated effort | S/M/L (days) |
-| Risk areas | List |
-
-## File Mappings
-### Validation Summary
-| Path | Status | Action |
-|------|--------|--------|
-| path/to/file.js | ✓ EXISTS | Modify |
-| path/to/new.js | ✗ CREATE | New file |
-
-### Create
-- `path/to/new.js` — Purpose
-### Modify  
-- `path/to/existing.js` — What changes
-### Reference (patterns read)
-- `path/to/pattern.js` — Why relevant
-
-## Data Model Changes
-### [ModelName] (`path/to/model.js`)
-| Field | Type | Nullable | Default | Description |
-|-------|------|----------|---------|-------------|
-
-## API Contracts
-### POST /v2/endpoint
-- **Request**: `{ field: "type — description" }`
-- **Response 200**: `{ ... }`
-- **Response 4xx**: Error conditions
-
-## Business Logic
-### [Rule Name]
-- **Trigger**: When this applies
-- **Condition**: If X then Y
-- **Action**: What happens
-
-## Test Scenarios
-### Happy Path
-| # | Scenario | Input | Expected Output |
-|---|----------|-------|-----------------|
-| 1 | Valid request | {...} | 200, {...} |
-
-### Edge Cases
-| # | Scenario | Input | Expected Output |
-|---|----------|-------|-----------------|
-| 1 | Invalid input | {...} | 400, error |
-
-### Error Handling
-| # | Scenario | Trigger | Expected Behavior |
-|---|----------|---------|-------------------|
-| 1 | Service down | API timeout | Retry 3x, then fail gracefully |
-
-## Security Checklist
-[Auto-generated based on feature type]
-
-## UI Copy (Bilingual)
-### [Screen/Component Name]
-| Key | Indonesian | English |
-|-----|------------|---------|
-| title | ... | ... |
-| button | ... | ... |
-
-### Error Messages
-| Code | Indonesian | English |
-|------|------------|---------|
-| ERROR_CODE | ... | ... |
-
-## Execution Checklist
-1. [ ] First implementation step
-2. [ ] Second step
-3. [ ] Write tests for scenarios above
-4. [ ] Verification step
-
----
-*Generated by requirements-refiner skill*
-*Saved to: agent-workflow/requirements/[filename].md*
+**Multi-file directory structure:**
+```
+agent-workflow/requirements/YYYYMMDD-feature-name/
+├── README.md              # Overview + navigation
+├── scope.md               # In/Out scope
+├── file-mappings.md       # Files to create/modify
+├── api-contracts.md       # (if applicable)
+├── data-model.md          # (if applicable)
+├── business-logic.md      # Rules and flows
+├── test-scenarios.md      # Test cases
+├── security.md            # Security checklist
+├── ui-copy.md             # (if applicable)
+└── execution-checklist.md # Implementation steps
 ```
 
 ## Claude Code Commands
@@ -367,13 +458,21 @@ test -f "path/to/file.js" && echo "EXISTS" || echo "CREATE"
 # Read existing pattern
 cat path/to/similar/file.js | head -100
 
-# Create output directory
+# Option A: Single file (< 150 lines)
 mkdir -p agent-workflow/requirements
-
-# Save refined PRD
 cat > agent-workflow/requirements/YYYYMMDD-feature-name.md << 'EOF'
-[content]
+[all sections in one file]
 EOF
+
+# Option B: Multi-file directory (≥ 150 lines or complex)
+mkdir -p agent-workflow/requirements/YYYYMMDD-feature-name
+cat > agent-workflow/requirements/YYYYMMDD-feature-name/README.md << 'EOF'
+[overview content]
+EOF
+cat > agent-workflow/requirements/YYYYMMDD-feature-name/scope.md << 'EOF'
+[scope content]
+EOF
+# ... repeat for each required file
 
 # Scaffold files (with conflict check)
 test -f "path/to/file.js" && cp "path/to/file.js" "path/to/file.js.new" || touch "path/to/file.js"
