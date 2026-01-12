@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ralph Wiggum PRD JSON",
+  "description": "Schema for PRD converted to Ralph Wiggum autonomous workflow format",
+  "type": "object",
+  "required": ["project", "branchName", "description", "userStories"],
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Project name from PRD title",
+      "minLength": 1
+    },
+    "branchName": {
+      "type": "string",
+      "description": "Git branch name in format ralph/feature-name-kebab-case",
+      "pattern": "^ralph/[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Feature description from PRD intro"
+    },
+    "userStories": {
+      "type": "array",
+      "description": "User stories ordered by dependency (schema→API→UI→dashboard)",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "description", "acceptanceCriteria", "priority", "passes", "notes"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique story identifier",
+            "pattern": "^US-[0-9]{3}$"
+          },
+          "title": {
+            "type": "string",
+            "description": "Short descriptive title",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "User story in format: As a [user], I want [feature] so that [benefit]"
+          },
+          "acceptanceCriteria": {
+            "type": "array",
+            "description": "Testable criteria including standard Ralph criteria",
+            "minItems": 4,
+            "items": {
+              "type": "string"
+            },
+            "contains": {
+              "const": "Typecheck passes"
+            }
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Priority based on dependency layer: 1=schema, 2=API, 3=UI, 4=dashboard",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "passes": {
+            "type": "boolean",
+            "description": "Whether story passes all criteria (always false initially)",
+            "const": false
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes (empty string initially)"
+          }
+        }
+      }
+    }
+  }
+}

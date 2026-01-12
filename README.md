@@ -24,6 +24,11 @@ Think of them as "expert modes" you can plug into Claude.
 | [writing-skills](skills/writing-skills/) | Guides creating new skills using TDD - test with subagents first, write skill to address failures, iterate until bulletproof. |
 | [testing-skills-with-subagents](skills/testing-skills-with-subagents/) | Tests skills before deployment using RED-GREEN-REFACTOR cycle. Runs baseline without skill, writes to fix failures, closes loopholes. |
 | [troubleshooting-kubernetes](skills/troubleshooting-kubernetes/) | Diagnoses K8s issues (CrashLoopBackOff, OOMKilled, ImagePullBackOff, pending pods) with interactive remediation. Always presents fix options before applying. |
+| [code-reviewer](skills/code-reviewer/) | Comprehensive code review with automated analysis, security scanning, and checklist generation. Supports TypeScript, JavaScript, Python, Swift, Kotlin, Go. |
+| [detecting-ai-code](skills/detecting-ai-code/) | Systematic framework for detecting AI-generated code with tiered signal detection and confidence scoring. Use for auditing acquisitions, contractors, or code review. |
+| [prd-to-ralph](skills/prd-to-ralph/) | Converts PRDs into structured JSON for Ralph Wiggum autonomous coding loops. Orders stories by dependency, auto-adds quality gates. |
+| [generating-adrs](skills/generating-adrs/) | Extracts architectural decisions from PRDs/TRDs and generates MADR-format ADR documents. One ADR per decision point. |
+| [interviewing-plans](skills/interviewing-plans/) | Interviews vague plans to surface hidden assumptions. Uses 8 required categories (Technical, UX, Tradeoffs, Edge Cases, Security, Testing, Rollback, Dependencies). |
 
 ## Getting Started
 
@@ -40,6 +45,11 @@ ln -s "$(pwd)/skills/creating-handoffs" ~/.claude/skills/
 ln -s "$(pwd)/skills/writing-skills" ~/.claude/skills/
 ln -s "$(pwd)/skills/testing-skills-with-subagents" ~/.claude/skills/
 ln -s "$(pwd)/skills/troubleshooting-kubernetes" ~/.claude/skills/
+ln -s "$(pwd)/skills/code-reviewer" ~/.claude/skills/
+ln -s "$(pwd)/skills/detecting-ai-code" ~/.claude/skills/
+ln -s "$(pwd)/skills/prd-to-ralph" ~/.claude/skills/
+ln -s "$(pwd)/skills/generating-adrs" ~/.claude/skills/
+ln -s "$(pwd)/skills/interviewing-plans" ~/.claude/skills/
 ```
 
 That's it. Skills activate automatically when relevant.
@@ -87,6 +97,37 @@ That's it. Skills activate automatically when relevant.
 > Pod keeps crashing with OOMKilled
 > Service returning 502, help me debug
 > Deployment stuck in pending
+```
+
+**When reviewing code or PRs:**
+```
+> Review this PR for issues
+> Check this code for security problems
+> Generate a code review checklist
+```
+
+**When auditing code for AI authorship:**
+```
+> Check if this code was AI-generated
+> Audit this codebase for AI patterns
+```
+
+**When converting PRDs to Ralph format:**
+```
+> Convert this PRD to Ralph JSON
+> Prepare these requirements for autonomous iteration
+```
+
+**When documenting architectural decisions:**
+```
+> Generate ADRs from this PRD
+> Document the decisions in this spec
+```
+
+**When plans are vague or ambiguous:**
+```
+> Interview this plan for hidden assumptions
+> This PRD says "make it faster" - help me clarify
 ```
 
 ## Want to Build Your Own?
